@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const corsOptions = {
-  origin: "https://tiny-boba-633a47.netlify.app",
+ origin: ["https://tiny-boba-633a47.netlify.app", "http://localhost:5173"],
   optionsSuccessStatus: 200,
 };
 
