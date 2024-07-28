@@ -10,7 +10,6 @@ const signup = async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.log("test");
       return res.status(400).json({ message: "User already exists" });
     }
 
@@ -18,7 +17,12 @@ const signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new user
-    const newUser = new User({ username, email, password: hashedPassword });
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      isVerified,
+    });
     await newUser.save();
 
     res.status(201).json({ message: "User created successfully" });
@@ -43,14 +47,16 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Generate a JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
+    res.cookie("token", token, {
+      maxAge: 3600000,
+    });
+
     res.status(200).json({
-      message: "login success",
-      token,
+      message: "Login successful",
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });

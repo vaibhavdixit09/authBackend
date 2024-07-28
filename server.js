@@ -2,6 +2,7 @@ const express = require("express");
 const Dbconnect = require("./utils/Dbconnect");
 const routes = require("./routes/user.routes");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,7 @@ const corsOptions = {
 };
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors(corsOptions));
 Dbconnect();
 
