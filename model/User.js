@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -13,6 +14,15 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+  },
+  role: {
+    type: String,
+    enum: ["admin", "employee", "manager"],
+    default: "employee",
+  },
+  assigned_manager: {
+    type: String,
+    default: "N/A",
   },
   isVerified: {
     type: Boolean,
