@@ -12,7 +12,12 @@ const {
   updateEmployee,
   fetchUserFromId,
 } = require("../controller/EmployeeController");
-const CreateTask = require("../controller/TaskController");
+const {
+  CreateTask,
+  DeleteTask,
+  GetManagerTasks,
+} = require("../controller/TaskController");
+const { GetAllTasks } = require("../controller/TaskController");
 const router = express.Router();
 
 router.post("/login", login);
@@ -21,8 +26,11 @@ router.get("/user-details", AuthenticateToken, fetchUser);
 router.post("/resend-verification", AuthenticateToken, resendVerificationEmail);
 router.get("/get-all/:type", fetchAllEmp);
 router.get("/get-user/:id", fetchUserFromId);
+router.get("/get-manager-task/:id", GetManagerTasks);
 router.put("/update/:id", updateEmployee);
-router.post("/assign-task", CreateTask);
+router.delete("/delete-task/:id", DeleteTask);
+router.post("/create-task", CreateTask);
+router.get("/get-all-tasks", GetAllTasks);
 
 router.get("/verify-email", async (req, res) => {
   const { token } = req.query;

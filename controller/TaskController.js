@@ -1,42 +1,98 @@
-const Employee = require("../model/Employee.model");
 const Task = require("../model/Task.model");
+const Employee = require("../model/Employee.model");
 
 const CreateTask = async (req, res) => {
   try {
-    let { title, description, dueDate, status, assignedTo } = req.body;
+    const { title, description, dueDate, priority, owner, assignedTo } =
+      req.body;
+    console.log("Request body:", req.body); // Log request body for debugging
 
-    // Convert dueDate to ISO format if it's in "dd-MM-yyyy"
-    if (dueDate && !dueDate.includes("T")) {
-      const [day, month, year] = dueDate.split("-");
-      dueDate = new Date(`${year}-${month}-${day}T00:00:00.000Z`);
+    // Validate required fields
+    if (!owner) {
+      return res.status(400).json({ message: "Missing required owner" });
+    }
+    if (!title) {
+      return res.status(400).json({ message: "Missing required title" });
+    }
+    if (!dueDate) {
+      return res.status(400).json({ message: "Missing required dueDate" });
+    }
+    if (!priority) {
+      return res.status(400).json({ message: "Missing required priority" });
     }
 
+    // Create and save new task
     const newTask = new Task({
+      owner,
       title,
       description,
       dueDate,
-      status,
+      priority,
       assignedTo,
     });
 
-    await newTask.save(); // Await the save operation
-    // Update the employee's tasks array
-    const employee = await Employee.findById(assignedTo);
-    if (!employee) {
-      throw new Error("Employee not found");
-    }
-
-    employee.tasks.push(newTask._id);
-    await employee.save();
+    await newTask.save();
 
     res.status(201).json({ message: "Task added", newTask });
   } catch (err) {
-    console.log("Error in creating task", err);
-    res.status(400).json({
-      message: "Error in creating task",
-      error: err.message, // Include error message for debugging (remove in production)
-    });
+    console.error("Error in creating task:", err);
+    res
+      .status(500)
+      .json({ message: "Error in creating task", error: err.message });
   }
 };
 
-module.exports = CreateTask;
+const GetAllTasks = async (req, res) => {
+  try {
+    const allTask = await Task.find({});
+    if (!allTask) {
+      res.status(404).json({ message: "Nothing to show", value: 0 });
+    }
+    res.status(200).json({
+      message: "tasks fetched success",
+      value: allTask.length,
+      allTask,
+    });
+  } catch (err) {
+    res.status(400).json({ message: "servor error in getting tasks", err });
+  }
+};
+const DeleteTask = async (req, res) => {
+  const taskId = req.params.id;
+
+  try {
+    const result = await Task.findByIdAndDelete(taskId);
+
+    if (!result) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.status(200).json({ message: "Task deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const GetManagerTasks = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const allManagerTasks = await Task.find({ owner: id });
+    if (!allManagerTasks) {
+      res
+        .status(404)
+        .json({ message: "No task found", values: allManagerTasks.length });
+    }
+    res.status(200).json({
+      message: "found success",
+      values: allManagerTasks.length,
+      allManagerTasks,
+    });
+  } catch (err) {
+    res.status(200).json({
+      message: "server error",
+      err,
+    });
+  }
+};
+module.exports = { CreateTask, GetAllTasks, DeleteTask, GetManagerTasks };
