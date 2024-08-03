@@ -1,11 +1,12 @@
 const express = require("express");
+const app = express();
 const Dbconnect = require("./utils/Dbconnect");
 const routes = require("./routes/user.routes");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
+app.use(express.urlencoded({ extended: true }));
 require("dotenv").config();
-const app = express();
 const PORT = process.env.PORT || 3000;
 const corsOptions = {
   origin: ["https://tiny-boba-633a47.netlify.app", "http://localhost:5173"],
