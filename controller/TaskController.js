@@ -28,7 +28,6 @@ const CreateTask = async (req, res) => {
       description,
       dueDate,
       priority,
-      assignedTo,
     });
 
     await newTask.save();
@@ -57,15 +56,20 @@ const GetAllTasks = async (req, res) => {
     res.status(400).json({ message: "servor error in getting tasks", err });
   }
 };
+
 const DeleteTask = async (req, res) => {
   const taskId = req.params.id;
 
   try {
+    // Find and delete the task
     const result = await Task.findByIdAndDelete(taskId);
 
     if (!result) {
       return res.status(404).json({ message: "Task not found" });
     }
+
+    // Remove the task reference from Employee documents
+    await Employee.updateMany({ tasks: taskId }, { $pull: { tasks: taskId } });
 
     res.status(200).json({ message: "Task deleted successfully" });
   } catch (error) {
@@ -73,6 +77,8 @@ const DeleteTask = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+module.exports = { DeleteTask };
 
 const GetManagerTasks = async (req, res) => {
   try {
@@ -95,4 +101,47 @@ const GetManagerTasks = async (req, res) => {
     });
   }
 };
-module.exports = { CreateTask, GetAllTasks, DeleteTask, GetManagerTasks };
+
+const AssignTask = async (req, res) => {
+  const { taskId, employeeId } = req.body;
+
+  try {
+    // Check if both task and employee exist
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    const employee = await Employee.findById(employeeId);
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // Add the task to the employee's tasks array
+    await Employee.findByIdAndUpdate(
+      employeeId,
+      { $addToSet: { tasks: taskId } }, // Using $addToSet to avoid duplicates
+      { new: true }
+    );
+
+    // Optionally, you might want to update the task to reflect the assignment
+    await Task.findByIdAndUpdate(
+      taskId,
+      { $addToSet: { assignedTo: employeeId } }, // Add employee to the assignedTo array
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Task assigned successfully" });
+  } catch (error) {
+    console.error("Error assigning task:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+module.exports = {
+  CreateTask,
+  GetAllTasks,
+  DeleteTask,
+  GetManagerTasks,
+  AssignTask,
+};

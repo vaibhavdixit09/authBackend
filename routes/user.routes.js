@@ -16,6 +16,7 @@ const {
   CreateTask,
   DeleteTask,
   GetManagerTasks,
+  AssignTask,
 } = require("../controller/TaskController");
 const { GetAllTasks } = require("../controller/TaskController");
 const router = express.Router();
@@ -30,6 +31,7 @@ router.get("/get-manager-task/:id", GetManagerTasks);
 router.put("/update/:id", updateEmployee);
 router.delete("/delete-task/:id", DeleteTask);
 router.post("/create-task", CreateTask);
+router.post("/assign-task", AssignTask);
 router.get("/get-all-tasks", GetAllTasks);
 
 router.get("/verify-email", async (req, res) => {

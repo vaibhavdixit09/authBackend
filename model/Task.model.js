@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const Employee = require("./Employee.model");
 const taskSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
@@ -16,16 +16,17 @@ const taskSchema = new mongoose.Schema({
   priority: {
     type: String,
     enum: ["urgent", "moderate", "lessimportant"],
-    default: "Moderate",
+    default: "moderate",
   },
   dueDate: {
     type: Date,
     required: true,
   },
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Employee",
-  },
+  assignedTo: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+    },
+  ],
 });
-
 module.exports = mongoose.model("Task", taskSchema);
