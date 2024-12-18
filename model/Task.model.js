@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
-
+const Employee = require("./Employee.model");
 const taskSchema = new mongoose.Schema({
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Manager",
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -8,20 +13,20 @@ const taskSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-  status: {
+  priority: {
     type: String,
-    enum: ["pending", "completed"],
-    default: "pending",
+    enum: ["urgent", "moderate", "lessimportant"],
+    default: "moderate",
   },
   dueDate: {
     type: Date,
     required: true,
   },
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Employee",
-    required: true,
-  },
+  assignedTo: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+    },
+  ],
 });
-
 module.exports = mongoose.model("Task", taskSchema);
